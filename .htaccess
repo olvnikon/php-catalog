@@ -1,0 +1,83 @@
+# Кодировка UTF-8
+AddDefaultCharset UTF-8
+php_value mbstring.internal_encoding UTF-8
+# Волшебные кавычки для входных данных GET/POST/Cookie
+php_flag magic_quotes_gpc Off
+# Волшебные кавычки для данных, поступающих во время выполнения
+php_flag magic_quotes_runtime Off
+# Использование волшебных кавычек в стиле Sybase
+php_flag magic_quotes_sybase Off
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+
+    # Запрет доступа в папки inc/ и admin/inc/
+    RewriteRule ^/core/$ - [F]
+    Options All -Indexes
+
+    # CMS правила
+    RewriteRule ^cms/.*(plugins\/tiny\_mce)/(.*)\.(woff|ttf|svg|js|ico|gif|jpg|png|css|htc|xml|txt) cms/templates/$1/$2.$3 [L]
+    RewriteRule ^cms/.*(images|css|js|plugins)/(.*)\.(woff|ttf|svg|js|ico|gif|jpg|png|css|htc|xml|txt|htm) cms/templates/$1/$2.$3 [L]
+    RewriteRule ^cms/([a-zA-Z_]+)/([a-zA-Z_]+)$ cms/?page=$1&tab=$2&%{QUERY_STRING} [L]
+    RewriteRule ^cms/([a-zA-Z_]+)$ cms/?page=$1&%{QUERY_STRING} [L]
+
+    # Main Site правила
+    RewriteRule ^.*(img|css|js|plugins)/(.*)\.(woff|ttf|svg|js|ico|gif|jpg|png|css|htc|xml|txt|tpl) templates/$1/$2.$3 [L]
+    RewriteRule ^.*images/(.*)\.(woff|ttf|svg|js|ico|gif|jpg|png|css|htc|xml|txt|tpl) images/$1.$2 [L]
+    RewriteRule ^([0-9a-zA-Z_\-]+)$ ?page=$1&%{QUERY_STRING} [L]
+    RewriteRule ^article/([0-9]+)$ ?page=article&id=$1 [L]
+    RewriteRule ^account/([0-9a-zA-Z_\-]*)/$ ?page=account&action=$1 [L]
+    RewriteRule ^product/([0-9a-zA-Z_\-]+).html$ ?page=product&name=$1&%{QUERY_STRING} [L]
+    RewriteRule ^catalog/([0-9a-zA-Z_\-]+)/$ ?page=catalog&category=$1 [L]
+    RewriteRule ^catalog/([0-9a-zA-Z_\-]+)/([a-zA-Z_\-]+)/$ ?page=catalog&category=$1&subcategory=$2 [L]
+    RewriteRule ^special/$ ?page=catalog&special=1 [L]
+    RewriteRule ^actions/$ ?page=catalog&actions=1 [L]
+    RewriteRule ^blog/([0-9a-zA-Z_\-]+)$ ?page=blog&article=$1&%{QUERY_STRING} [L]
+    RewriteRule ^blog/cat/([0-9a-zA-Z_\-]+)$ ?page=blog&category=$1&%{QUERY_STRING} [L]
+    RewriteRule ^verification/success$ ?page=verification&state=1 [L]
+    RewriteRule ^verification/([0-9a-zA-Z_\-]+)$ ?page=verification&code=$1 [L]
+
+    # 404
+    RewriteRule ^not_found.html$ public_html/404.html [L]
+    ErrorDocument 404 /not_found.html
+
+    # 503
+    RewriteRule ^site_disabled.html$ public_html/503.html [L]
+    ErrorDocument 503 /site_disabled.html
+</IfModule>
+
+<ifModule mod_headers.c>
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "max-age=604800, public"
+	</FilesMatch>
+    <FilesMatch "\.(ico|gif|jpg|jpeg|png)$">
+		Header set Cache-Control "max-age=2592000, public"
+	</FilesMatch>
+   <FilesMatch ".(html|txt)$">
+        Header set Cache-Control "max-age=172800, public, must-revalidate"
+   </FilesMatch>
+</IfModule>
+
+<ifModule mod_expires.c>
+    ExpiresActive On
+
+  ExpiresByType image/x-icon "access plus 2592000 seconds"
+	ExpiresByType image/jpeg "access plus 2592000 seconds"
+	ExpiresByType image/png "access plus 2592000 seconds"
+	ExpiresByType image/gif "access plus 2592000 seconds"
+
+  ExpiresByType text/css "access plus 604800 seconds"
+	ExpiresByType text/javascript "access plus 604800 seconds"
+	ExpiresByType application/javascript "access plus 604800 seconds"
+	ExpiresByType application/x-javascript "access plus 604800 seconds"
+</IfModule>
+<ifModule mod_gzip.c>
+    mod_gzip_on Yes
+    mod_gzip_dechunk Yes
+    mod_gzip_item_include file .(css|js|x?html?|php|xml)$
+    mod_gzip_item_include handler ^cgi-script$
+    mod_gzip_item_include mime ^application/x-javascript.*
+    mod_gzip_item_exclude mime ^image/.*
+    mod_gzip_item_exclude rspheader ^Content-Encoding:.*gzip.*
+</ifModule>
